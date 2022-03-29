@@ -5,10 +5,12 @@ from cmath import nan, isnan
 import numpy as np
 import matplotlib.pyplot as plt
 import inc.Helpers.display as dsp
-from inc.Helpers.reader import load_data_npy, load_data_npy2
+from inc.Helpers.reader import load_data_npy, load_data_mat
 from inc.triangle_filling import render, shade_triangle
 
-verts2d, vcolors, faces, depth = load_data_npy(filename='hw1.npy')
+
+verts2d, vcolors, faces, depth = load_data_npy(filename='data/hw1.npy')
+
 m = 512
 n = 512
 d = 3
@@ -72,7 +74,8 @@ for t in triangles_in_order:
 
         if is_invisible:
             for point in np.around(active_nodes[active_edges]):
-                img[int(point[0]), int(point[1])] = new_color
+                if 0 <= point[0] <= m:
+                    img[int(point[0]), int(point[1])] = new_color
         else:
             for x in range(x_min, x_max + 1):
                 cross_counter += np.count_nonzero(x == np.around(active_nodes[active_edges][:, 0]))
