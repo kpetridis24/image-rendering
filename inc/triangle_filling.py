@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import inc.Helpers.tools as tls
 from inc.interpolate_color import interpolate_color
-from inc.Helpers.display import display_scan_state
+import inc.Helpers.display as dsp
 from inc.Helpers.display import display_npy
 
 

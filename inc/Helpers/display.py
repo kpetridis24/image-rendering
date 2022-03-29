@@ -20,14 +20,21 @@ def display_npy(img, save=False, filename='out'):
         fig.save(filename + '.png')
 
 
-def display_scan_state(y, active_edges, active_nodes, x_edge_limits, y_edge_limits):
-    for i, e in enumerate(active_edges):
-        if e:
-            X = list(x_edge_limits[i])
-            Y = list(y_edge_limits[i])
+def show_vscan(y, active_edges, active_nodes, vertices_of_edge):
+    for i, edge in enumerate(active_edges):
+        if edge:
+            X = list(vertices_of_edge[i, :, 0])
+            Y = list(vertices_of_edge[i, :, 1])
             plt.plot(X, Y)
-    for e, point in enumerate(active_nodes):
-        if active_edges[e]:
-            plt.plot([point[0]], [point[1]], marker='o', markersize=4, color="red")
-    plt.axhline(y, color='r', linestyle='-')
+    for v in active_nodes[active_edges]:
+        plt.plot([v[0]], [v[1]], marker='o', markersize=5, color="black")
+        plt.axhline(y, color='r', linestyle='-')
+    plt.show()
+
+
+def show_triangle(vertices_of_edge):
+    for i in range(3):
+        X = list(vertices_of_edge[i, :, 0])
+        Y = list(vertices_of_edge[i, :, 1])
+        plt.plot(X, Y)
     plt.show()

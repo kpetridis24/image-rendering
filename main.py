@@ -1,67 +1,87 @@
 """
 Triangle filling demo
 """
+from cmath import nan, isnan
 import numpy as np
-from inc.Helpers.display import display_npy
-from inc.Helpers.reader import load_data_npy
+import matplotlib.pyplot as plt
+import inc.Helpers.display as dsp
+from inc.Helpers.reader import load_data_npy, load_data_npy2
 from inc.triangle_filling import render, shade_triangle
 
-
 verts2d, vcolors, faces, depth = load_data_npy(filename='hw1.npy')
-img = render(verts2d, faces, vcolors, depth, shade_t='gouraud')
-# img_ready = img/np.amax(img)
-display_npy(img)
+m = 512
+n = 512
+d = 3
+img = np.ones((m, n, d))
 
-# img = np.ones((512, 512, 3))
-# for t in range(140, 141):
-#     v2d = np.array(verts2d[faces[t]])
-#     vc = np.array(vcolors[faces[t]])
-#     # v2d = np.array([[0, 0], [5, 0], [2, 4]])
-#     # print(v2d)
-#     img = shade_triangle(img, v2d, vc, shade_t='flat')
-#
-# display_npy(img)
-# a = np.array([[1, 1, 1], [2, 2, 3], [1, 2, 3]])
-# c = np.array(np.sum(a, axis=0) / 3)
-# img[1, 1, :] = c
-# print(img)
+vertex_coord_tr = verts2d[faces]  # Vertex coordinates of triangles. Triangle i has vertices with coordinates arr[i]
+depth_tr = np.array(np.mean(depth[faces], axis=1))  # depth of every triangle. depth[i] = depth of triangle i
+triangles_in_order = list(np.flip(np.argsort(depth_tr)))  # order from the farthest triangle to the closest, depth-wise
 
-# a = np.array([[1, 3], [4, 2], [1, 6]])
-# print(np.count_nonzero(a[:, 0] == 4))
+# for every triangle t <- index of the triangle
+for t in triangles_in_order:
+    vertices_tr = faces[t]
+    verts2d_tr = np.array(verts2d[vertices_tr])  # x,y of the 3 vertices of triangle t
+    vcolors_tr = np.array(vcolors[vertices_tr])  # color of the 3 vertices of triangle t
 
-# x_edge_min, x_edge_max, y_edge_min, y_edge_max = compute_limits(v2d)
-# y_edges = np.array(np.c_[y_edge_min, y_edge_max])
-#
-# y_min, y_max = int(np.min(y_edge_min)), int(np.max(y_edge_max))
-# y_edge_limits = np.array(np.c_[y_edge_min, y_edge_max])
-# active_edges = np.array([False, False, False])
-#
-# x_verts, y_verts = np.array(v2d[:, 0]), np.array(v2d[:, 1])
-# edges_sigma = np.zeros((3, ))
-#
-# for i, (pair_x, pair_y) in enumerate(zip(combinations(x_verts, 2), combinations(y_verts, 2))):
-#     if pair_x[1] != pair_x[0]:
-#         edges_sigma[i] = (pair_y[1] - pair_y[0]) / (pair_x[1] - pair_x[0])
-#     else:
-#         edges_sigma[i] = float('inf')
+    new_color = np.array(np.mean(vcolors_tr, axis=0))  # for flat painting, color of triangle t
 
+    vertices_of_edge = np.array([[verts2d_tr[0], verts2d_tr[1]],
+                                 [verts2d_tr[0], verts2d_tr[2]],
+                                 [verts2d_tr[1], verts2d_tr[2]]])
 
+    x_limits_of_edge = np.array([np.min(vertices_of_edge[:, :, 0], axis=1),
+                                 np.max(vertices_of_edge[:, :, 0], axis=1)]).T
+    y_limits_of_edge = np.array([np.min(vertices_of_edge[:, :, 1], axis=1),
+                                 np.max(vertices_of_edge[:, :, 1], axis=1)]).T
 
+    diff = np.array(vertices_of_edge[:, 1] - vertices_of_edge[:, 0])
+    # 1. positive/negative number means it's a line
+    # 2. 0 means it's horizontal line
+    # 3. float('inf') means it's a vertical line
+    # 4. nan means it's a dot, not a line. So the triangle is a line (twisted inside z axis, not visible)
+    sigma_of_edge = np.array(diff[:, 1] / diff[:, 0])
 
-# print(y_edge_min)
-# print(y_edge_max)
-# print(y_edge_limits)
+    # find min/max x and y
+    x_min, x_max = int(np.amin(x_limits_of_edge)), int(np.amax(x_limits_of_edge))
+    y_min, y_max = int(np.amin(y_limits_of_edge)), int(np.amax(y_limits_of_edge))
 
-# X = [v2d[0, 0], v2d[1, 0], v2d[2, 0]]
-# Y = [v2d[0, 1], v2d[1, 1], v2d[2, 1]]
-# plt.plot(X, Y)
-# plt.show()
+    # find initial active edges for y = 0
+    active_edges = np.array([False, False, False])
+    active_nodes = np.zeros((3, 2))
+    is_horizontal = False
+    is_invisible = False
 
-# for y in range(y_min, y_max):
-#     for i, y_edge in enumerate(y_edge_limits):
-#         if y_edge[0] == y:
-#             active_edges[i] = True
-#         if y_edge[1] == y - 1:
-#             active_edges[i] = False
+    # y scan
+    for y in range(y_min, y_max + 1):
+        cross_counter = 0
+        # update active elements
+        for i, y_limit in enumerate(y_limits_of_edge):
+            if y_limit[0] == y:  # y-scan line meets new edge from the bottom
+                if sigma_of_edge[i] == 0:  # it's a horizontal line
+                    is_horizontal = True
+                    continue
+                if isnan(sigma_of_edge[i]):  # it's an invisible line
+                    is_invisible = True
+                    continue
+                active_edges[i] = True  # in other cases, it's an active line
+                pos = np.argmin(vertices_of_edge[i, :, 1])
+                active_nodes[i] = [vertices_of_edge[i, pos, 0], y_limits_of_edge[i, 0]]
+            if y_limit[1] == y - 1:
+                active_edges[i] = False
 
-# print(active_edges)
+        if is_invisible:
+            for point in np.around(active_nodes[active_edges]):
+                img[int(point[0]), int(point[1])] = new_color
+        else:
+            for x in range(x_min, x_max + 1):
+                cross_counter += np.count_nonzero(x == np.around(active_nodes[active_edges][:, 0]))
+                if cross_counter % 2 != 0:
+                    img[x, y] = new_color
+
+        for i, sigma in enumerate(sigma_of_edge):
+            if active_edges[i] and sigma != 0:
+                active_nodes[i, 0] += 1 / sigma_of_edge[i]
+                active_nodes[i, 1] += 1
+
+dsp.display_npy(img)

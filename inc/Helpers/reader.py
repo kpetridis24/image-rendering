@@ -14,14 +14,19 @@ def load_data_npy(filename):
     data = np.load(filename, allow_pickle=True).tolist()
     data = dict(data)
 
-    verts2d = np.array([data['verts2d']])
-    vcolors = np.array([data['vcolors']])
-    faces = np.array([data['faces']])
-    depth = np.array([data['depth']])
+    verts2d = np.array(data['verts2d'])
+    vcolors = np.array(data['vcolors'])
+    faces = np.array(data['faces'])
+    depth = np.array(data['depth'])
 
-    verts2d = verts2d.reshape(verts2d.shape[1], verts2d.shape[2])
-    vcolors = vcolors.reshape(vcolors.shape[1], vcolors.shape[2])
-    faces = faces.reshape(faces.shape[1], faces.shape[2])
-    depth = depth.reshape(depth.shape[1])
+    return verts2d, vcolors, faces, depth
+
+
+def load_data_npy2(filename):
+    data = np.load(filename, allow_pickle=True)
+    verts2d = np.array(data.item().get('verts2d'))
+    vcolors = np.array(data.item().get('vcolors'))
+    faces = np.array(data.item().get('faces'))
+    depth = np.array(data.item().get('depth'))
 
     return verts2d, vcolors, faces, depth
