@@ -11,7 +11,7 @@ from inc.Helpers.display import display_npy
 
 
 def draw_pixel_flat(x, y, vcolors, img):
-    rgb_value = np.array(np.sum(vcolors, axis=0) / 3)
+    rgb_value = np.array(np.mean(vcolors, axis=0))
     img[x, y, :] = rgb_value
     return img
 

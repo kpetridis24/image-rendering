@@ -8,7 +8,7 @@ from inc.triangle_filling import render, shade_triangle
 
 
 verts2d, vcolors, faces, depth = load_data_npy(filename='hw1.npy')
-img = render(verts2d, faces, vcolors, depth, shade_t='gouraud')
+img = render(verts2d, faces, vcolors, depth, shade_t='flat')
 # img_ready = img/np.amax(img)
 display_npy(img)
 
