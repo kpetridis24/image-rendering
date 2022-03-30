@@ -1,49 +1,50 @@
 """
 Calculate the necessary limits for a specified triangle
 """
+from cmath import isnan
+
 import numpy as np
-from sympy.utilities.iterables import multiset_permutations
-from itertools import combinations
 
 
 def compute_edge_limits(verts2d):
-    x_edge_limits = np.array([[verts2d[0, 0], verts2d[1, 0]], [verts2d[0, 0], verts2d[2, 0]],
-                              [verts2d[1, 0], verts2d[2, 0]]])
-    y_edge_limits = np.array([[verts2d[0, 1], verts2d[1, 1]], [verts2d[0, 1], verts2d[2, 1]],
-                              [verts2d[1, 1], verts2d[2, 1]]])
-    return x_edge_limits, y_edge_limits
+    edges_verts = np.array([[verts2d[0], verts2d[1]], [verts2d[0], verts2d[2]], [verts2d[1], verts2d[2]]])
+
+    x_limits = np.array([np.min(edges_verts[:, :, 0], axis=1),
+                         np.max(edges_verts[:, :, 0], axis=1)]).T
+    y_limits = np.array([np.min(edges_verts[:, :, 1], axis=1),
+                         np.max(edges_verts[:, :, 1], axis=1)]).T
+
+    diff = np.array(edges_verts[:, 1] - edges_verts[:, 0])
+    # 1. positive/negative number means it's a line
+    # 2. 0 means it's horizontal line
+    # 3. float('inf') means it's a vertical line
+    # 4. nan means it's a dot, not a line. So the triangle is a line (twisted inside z axis, not visible)
+    edges_sigma = np.array(diff[:, 1] / diff[:, 0])
+    return edges_verts, x_limits, y_limits, edges_sigma
 
 
-def compute_edge_sigma(verts2d):
-    x_verts, y_verts = np.array(verts2d[:, 0]), np.array(verts2d[:, 1])
-    edges_sigma = np.zeros((3,))
-    for i, (pair_x, pair_y) in enumerate(zip(combinations(x_verts, 2), combinations(y_verts, 2))):
-        if pair_x[1] != pair_x[0]:
-            edges_sigma[i] = (pair_y[1] - pair_y[0]) / (pair_x[1] - pair_x[0])
-        else:
-            edges_sigma[i] = float('inf')
-    return edges_sigma
-
-
-def compute_active_elements(y, verts2d, y_edge_limits, active_edges, active_nodes, x_edge_lookup):
-    for i, y_edge in enumerate(y_edge_limits):
-        pos = np.argmin(y_edge)
-        if np.min(y_edge) == y:
-            active_edges[i] = True
-            active_nodes[i] = [verts2d[x_edge_lookup[i][int(pos)], 0], np.min(y_edge)]
-        if np.max(y_edge) == y - 1:
+def compute_active_elements(y, vertices_of_edge, y_limits_of_edge, sigma_of_edge, active_edges, active_nodes):
+    is_invisible = False
+    for i, y_limit in enumerate(y_limits_of_edge):
+        if y_limit[0] == y:  # y-scan line meets new edge from the bottom
+            if sigma_of_edge[i] == 0:  # it's a horizontal line
+                is_horizontal = True
+                continue
+            if isnan(sigma_of_edge[i]):  # it's an invisible line
+                is_invisible = True
+                continue
+            active_edges[i] = True  # in other cases, it's an active line
+            pos = np.argmin(vertices_of_edge[i, :, 1])
+            active_nodes[i] = [vertices_of_edge[i, pos, 0], y_limits_of_edge[i, 0]]
+        if y_limit[1] == y - 1:
             active_edges[i] = False
 
-    return active_edges, active_nodes
+    return active_edges, active_nodes, is_invisible
 
 
-def update_active_nodes(edges_sigma, active_edges, active_nodes):
-    x_updated = np.zeros((3,))
-    for cnt, s in enumerate(edges_sigma):
-        if s != 0:
-            x_updated[cnt] = active_nodes[cnt, 0] + 1 / edges_sigma[cnt]
-
-    y_updated = np.ones((3,))
-    active_nodes[active_edges, 0] = x_updated[active_edges]
-    active_nodes[active_edges, 1] += y_updated[active_edges]
+def update_active_nodes(sigma_of_edge, active_edges, active_nodes):
+    for i, sigma in enumerate(sigma_of_edge):
+        if active_edges[i] and sigma != 0:
+            active_nodes[i, 0] += 1 / sigma_of_edge[i]
+            active_nodes[i, 1] += 1
     return active_nodes

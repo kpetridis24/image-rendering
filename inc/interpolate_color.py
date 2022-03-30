@@ -1,9 +1,8 @@
 """
 Linear interpolation of the colors of two triangle vertices
 """
-import matplotlib.pyplot as plt
 import numpy as np
-import cv2 as cv
+
 
 """
 Computes the RGB color of a point, via the linear interpolation of colors from two triangle vertices.

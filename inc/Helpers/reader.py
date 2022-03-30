@@ -23,6 +23,12 @@ def load_data_npy(filename):
     return verts2d, vcolors, faces, depth
 
 
+"""
+Loads the necessary data from a .mat file.
+
+@param filename: the name of the file, including the .mat extension.
+@return: vertex coordinates & indices, color and depth of all triangles
+"""
 def load_data_mat(filename):
     data = io.loadmat(filename)
     verts2d = np.array(data['vertices_2d'] - 1)
