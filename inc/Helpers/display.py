@@ -1,33 +1,52 @@
-"""
-Image displaying functions
-"""
 import matplotlib.pyplot as plt
-from PIL import Image
+import imageio
 
 
-"""
-Given a numpy matrix, displays it as a PNG image
-
-@param img: MxNx3 image with RGB colors
-@param save: indicates whether to save the image 
-@param filename: the name to store the image, without the .png extension
-"""
 def display_npy(img, save=False, filename='out'):
+    """Displays a numpy matrix as a PNG image
+
+    Parameters
+    ----------
+    img : MxNx3 image with RGB colors
+    save : indicates whether to save the image
+    filename : the name to store the image, without the extension
+    """
     plt.imshow(img, interpolation='nearest')
     plt.show()
     if save:
-        fig = Image.fromarray(img, 'RGB')
-        fig.save(filename + '.png')
+        imageio.imwrite(filename + '.png', img)
 
 
-def display_scan_state(y, active_edges, active_nodes, x_edge_limits, y_edge_limits):
-    for i, e in enumerate(active_edges):
-        if e:
-            X = list(x_edge_limits[i])
-            Y = list(y_edge_limits[i])
+def show_vscan(y, active_edges, active_nodes, vertices_of_edge):
+    """Shows the state of the vertical scanning on the specified triangle
+
+    Parameters
+    ----------
+    y : horizontal line, scanning vertically. In each step, y is increased by 1, until the whole triangle is scanned
+    active_edges : the edges, intersected by line y, in the current state. only these are displayed
+    active_nodes : the points that the y line, intersects the active edges
+    vertices_of_edge : the coordinates from the vertices of each edge of the triangle
+    """
+    for i, edge in enumerate(active_edges):
+        if edge:
+            X = list(vertices_of_edge[i, :, 0])
+            Y = list(vertices_of_edge[i, :, 1])
             plt.plot(X, Y)
-    for e, point in enumerate(active_nodes):
-        if active_edges[e]:
-            plt.plot([point[0]], [point[1]], marker='o', markersize=4, color="red")
-    plt.axhline(y, color='r', linestyle='-')
+    for v in active_nodes[active_edges]:
+        plt.plot([v[0]], [v[1]], marker='o', markersize=5, color="black")
+        plt.axhline(y, color='r', linestyle='-')
+    plt.show()
+
+
+def show_triangle(vertices_of_edge):
+    """Displays the specified triangle
+
+    Parameters
+    ----------
+    vertices_of_edge : the coordinates from the vertices of each edge of the triangle
+    """
+    for i in range(3):
+        X = list(vertices_of_edge[i, :, 0])
+        Y = list(vertices_of_edge[i, :, 1])
+        plt.plot(X, Y)
     plt.show()
