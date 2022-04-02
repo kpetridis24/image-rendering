@@ -2,7 +2,6 @@
 Triangle filling functions
 """
 from cmath import isnan
-
 import numpy as np
 import inc.Helpers.tools as tls
 import inc.coloring as clr
@@ -98,12 +97,12 @@ def render_flat(verts2d, vcolors, img):
                                                                            sigma_of_edge, new_color, img)
     if is_invisible:
         return img
-
+    dsp.show_vscan(y_min, active_edges, active_nodes, vertices_of_edge)
     for y in range(y_min + 1, y_max + 1):
         active_edges, active_nodes, updated_nodes = tls.update_active_edges(y, vertices_of_edge, y_limits_of_edge,
                                                                             sigma_of_edge, active_edges, active_nodes)
         active_nodes = tls.update_active_nodes(sigma_of_edge, active_edges, active_nodes, updated_nodes)
-
+        dsp.show_vscan(y, active_edges, active_nodes, vertices_of_edge)
         cross_counter = 0
         for x in range(x_min, x_max + 1):
             cross_counter += np.count_nonzero(x == np.around(active_nodes[active_edges][:, 0]))
@@ -134,7 +133,7 @@ def render(verts2d, faces, vcolors, depth, m, n, shade_t):
     # order from the farthest triangle to the closest, depth-wise
     triangles_in_order = list(np.flip(np.argsort(depth_tr)))
 
-    for t in triangles_in_order:
+    for t in triangles_in_order[350:351]:
         vertices_tr = faces[t]
         verts2d_tr = np.array(verts2d[vertices_tr])  # x,y of the 3 vertices of triangle t
         vcolors_tr = np.array(vcolors[vertices_tr])  # color of the 3 vertices of triangle t
