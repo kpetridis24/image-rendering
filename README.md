@@ -6,8 +6,8 @@ To run the code, execute
 ```
 demo_flat.py
 ```
-for flat rendering, and
+for **flat** rendering, and
 ```
 demo_gouraud.py
 ```
-for smooth rendering. Both files are located inside the **src** directory. The result is going to be saved under the **results** directory, overwriting the previously stored images.
+for **smooth** rendering. Both files are located inside the **src** directory. The result is going to be saved under the **results** directory, overwriting the previously stored images.
