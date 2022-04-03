@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import imageio
+import numpy as np
 
 
 def display_npy(img, save=False, filename='out'):
@@ -14,7 +15,8 @@ def display_npy(img, save=False, filename='out'):
     plt.imshow(img, interpolation='nearest')
     plt.show()
     if save:
-        imageio.imwrite(filename + '.png', img)
+        imageio.imsave(filename + '.png', img)
+        # imageio.imsave(filename + '.png', (img * 255).astype(np.uint8))
 
 
 def show_vscan(y, active_edges, active_nodes, vertices_of_edge):

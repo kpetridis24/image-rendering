@@ -3,15 +3,11 @@ import numpy as np
 import inc.coloring as clr
 
 
-def initial_active_elements(active_edges, active_nodes, vertices_of_edge, x_limits_of_edge,
-                            y_limits_of_edge, sigma_of_edge, new_color, img):
+def initial_active_elements(active_edges, active_nodes, vertices_of_edge, y_limits_of_edge, sigma_of_edge):
     y_min, y_max = int(np.amin(y_limits_of_edge)), int(np.amax(y_limits_of_edge))
     is_invisible = False
 
     for i, y_limit in enumerate(y_limits_of_edge):
-        if y_limit[1] == y_max:
-            if sigma_of_edge[i] == 0:  # upper horizontal line
-                img = clr.color_horizontal(None, y_max, x_limits_of_edge, new_color, img, None, None)
         if y_limit[0] == y_min:  # y-scan line meets new edge from the bottom
             if sigma_of_edge[i] == 0:  # lower horizontal line
                 continue

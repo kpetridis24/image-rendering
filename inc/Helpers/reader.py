@@ -20,7 +20,12 @@ def load_data_npy(filename):
     faces = np.array(data['faces'])
     depth = np.array(data['depth'])
 
-    return verts2d, vcolors, faces, depth
+    # Turn the image by 90 degrees
+    verts2d_final = np.zeros((verts2d.shape[0], 2))
+    verts2d_final[:, 0] = verts2d[:, 1]
+    verts2d_final[:, 1] = verts2d[:, 0]
+
+    return verts2d_final, vcolors, faces, depth
 
 
 """

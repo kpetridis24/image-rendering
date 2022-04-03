@@ -21,44 +21,26 @@ def render_smooth(verts2d, vcolors, img):
     active_edges = np.array([False, False, False])
     active_nodes = np.zeros((3, 2))
 
-    y_min, y_max = int(np.amin(y_limits_of_edge)), int(np.amax(y_limits_of_edge))
     is_invisible = False
-
     node_combination_on_edge = {0: [0, 1],
                                 1: [0, 2],
                                 2: [1, 2]
                                 }
 
-    for i, y_limit in enumerate(y_limits_of_edge):
-        if y_limit[1] == y_max:
-            if sigma_of_edge[i] == 0:  # upper horizontal line
-                img = clr.color_horizontal(i, y_max, x_limits_of_edge, None, img, node_combination_on_edge, vcolors)
-        if y_limit[0] == y_min:  # y-scan line meets new edge from the bottom
-            if sigma_of_edge[i] == 0:  # lower horizontal line
-                img = clr.color_vertex(y_max, i, sigma_of_edge, vertices_of_edge, verts2d, vcolors, img)
-                continue
-            if isnan(sigma_of_edge[i]):  # it's an invisible line
-                is_invisible = True
-                continue
-            active_edges[i] = True  # in other cases, it's an active line
-            pos = np.argmin(vertices_of_edge[i, :, 1])
-            active_nodes[i] = [vertices_of_edge[i, pos, 0], y_limits_of_edge[i, 0]]
-
+    active_edges, active_nodes, is_invisible = tls.initial_active_elements(active_edges, active_nodes, vertices_of_edge,
+                                                                           y_limits_of_edge, sigma_of_edge)
     if is_invisible:
         return img
 
-    # y scan
-    for y in range(y_min + 1, y_max):
+    for y in range(y_min, y_max):
         active_edges, active_nodes, updated_nodes = tls.update_active_edges(y, vertices_of_edge, y_limits_of_edge,
                                                                             sigma_of_edge, active_edges, active_nodes)
         active_nodes = tls.update_active_nodes(sigma_of_edge, active_edges, active_nodes, updated_nodes)
-        # dsp.show_vscan(y, active_edges, active_nodes, vertices_of_edge)
-        # print('y= ', y)
+
         img, active_nodes_color = tls.paint_active_nodes(y, node_combination_on_edge,
                                                          x_limits_of_edge, y_limits_of_edge, sigma_of_edge,
                                                          active_edges, active_nodes, vcolors, img)
-        # print(active_nodes)
-        # print(active_edges)
+
         x_left, idx_left = np.min(active_nodes[active_edges, 0]), np.argmin(active_nodes[active_edges, 0])
         x_right, idx_right = np.max(active_nodes[active_edges, 0]), np.argmax(active_nodes[active_edges, 0])
         c1, c2 = active_nodes_color[active_edges][idx_left], active_nodes_color[active_edges][idx_right]
@@ -90,16 +72,12 @@ def render_flat(verts2d, vcolors, img):
     active_nodes = np.zeros((3, 2))
 
     active_edges, active_nodes, is_invisible = tls.initial_active_elements(active_edges, active_nodes, vertices_of_edge,
-                                                                           x_limits_of_edge, y_limits_of_edge,
-                                                                           sigma_of_edge, new_color, img)
+                                                                           y_limits_of_edge, sigma_of_edge)
     if is_invisible:
         return img
 
     # dsp.show_vscan(y_min, active_edges, active_nodes, vertices_of_edge)
-    for y in range(y_min + 1, y_max + 1):
-        active_edges, active_nodes, updated_nodes = tls.update_active_edges(y, vertices_of_edge, y_limits_of_edge,
-                                                                            sigma_of_edge, active_edges, active_nodes)
-        active_nodes = tls.update_active_nodes(sigma_of_edge, active_edges, active_nodes, updated_nodes)
+    for y in range(y_min, y_max + 1):
         # dsp.show_vscan(y, active_edges, active_nodes, vertices_of_edge)
         cross_counter = 0
         for x in range(x_min, x_max + 1):
@@ -109,6 +87,9 @@ def render_flat(verts2d, vcolors, img):
             elif y == y_max and np.count_nonzero(x == np.around(active_nodes[active_edges][:, 0])) > 0:
                 img[x, y] = new_color
 
+        active_edges, active_nodes, updated_nodes = tls.update_active_edges(y, vertices_of_edge, y_limits_of_edge,
+                                                                            sigma_of_edge, active_edges, active_nodes)
+        active_nodes = tls.update_active_nodes(sigma_of_edge, active_edges, active_nodes, updated_nodes)
     return img
 
 
@@ -131,7 +112,7 @@ def render(verts2d, faces, vcolors, depth, m, n, shade_t):
     # order from the farthest triangle to the closest, depth-wise
     triangles_in_order = list(np.flip(np.argsort(depth_tr)))
 
-    for t in triangles_in_order:
+    for t in triangles_in_order:#[4004:4005]:
         vertices_tr = faces[t]
         verts2d_tr = np.array(verts2d[vertices_tr])  # x,y of the 3 vertices of triangle t
         vcolors_tr = np.array(vcolors[vertices_tr])  # color of the 3 vertices of triangle t

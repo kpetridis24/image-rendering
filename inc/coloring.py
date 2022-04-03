@@ -56,6 +56,32 @@ def color_horizontal(edge_idx, y, x_limits_of_edge, color, img, node_combination
     return img
 
 
+def color_contour(y, node_combination_on_edge, x_limits_of_edge, y_limits_of_edge, sigma_of_edge,
+                  active_edges, active_nodes, vcolors, img):
+    active_nodes_color = np.zeros((3, 3))
+
+    for i, point in enumerate(active_nodes):
+        if active_edges[i]:
+            # The edge coordinates of every active node. This is the edge i.
+            x_edge = np.array(x_limits_of_edge[i])
+            y_edge = np.array(y_limits_of_edge[i])
+            node_pair = node_combination_on_edge[i]
+            c1, c2 = vcolors[node_pair[0]], vcolors[node_pair[1]]
+            # case of horizontal edge
+            # if sigma_of_edge[i] == 0:
+            #     active_nodes_color[i] = interpolate_color(x_edge[0], x_edge[1], active_nodes[i, 0], c1, c2)
+            #     for x in range(x_edge[0], x_edge[1]):
+            #         img[int(np.around(x)), int(np.around(y))] = interpolate_color(x_edge[0], x_edge[1], x, c1, c2)
+            if np.abs(sigma_of_edge[i]) == float('inf'):
+                active_nodes_color[i] = interpolate_color(y_edge[0], y_edge[1], y, c1, c2)
+                img[int(active_nodes[i, 0]), int(np.around(y))] = active_nodes_color[i]
+            else:
+                active_nodes_color[i] = interpolate_color(y_edge[0], y_edge[1], y, c1, c2)
+                img[int(active_nodes[i, 0]), int(np.around(y))] = active_nodes_color[i]
+
+    return img, active_nodes_color
+
+
 def color_vertex(y_max, edge_idx, sigma_of_edge, vertices_of_edge, verts2d, vcolors, img):
     """Colors a single vertex
 
