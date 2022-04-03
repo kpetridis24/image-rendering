@@ -1,9 +1,13 @@
-# computer-graphics
+# triangle-filling
 
-The graphical illustration was divided in three separate projects.
+All necessary information about the project is included in the paper, under the **report** directory. Everything you need to know about triangle filling and image rendering is extensively discussed with algorithms and graphical illustrations.
 
-**Project-1**
-
-In this phase, we start from the basics. The canvas is divided into triangles (convex shape for simplicity and versatility). The triangles consist of three vertices,
-each having its own coordinates on the canvas. Every triangle vertex also has an RGB value, which corresponds to its color. The filling of all triangles, existing on 
-the canvas, is main goal of the first phase.
+To run the code, execute
+```
+demo_flat.py
+```
+for flat rendering, and
+```
+demo_gouraud.py
+```
+for smooth rendering. Both files are located inside the **src** directory. The result is going to be saved under the **results** directory, overwriting the previously stored images.
