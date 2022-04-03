@@ -55,4 +55,9 @@ def load_data_mat(filename):
     faces = np.array(data['faces'] - 1)
     depth = np.array(data['depth']).T[0]
 
+    # Turn the image by 90 degrees
+    verts2d_final = np.zeros((verts2d.shape[0], 2))
+    verts2d_final[:, 0] = verts2d[:, 1]
+    verts2d_final[:, 1] = verts2d[:, 0]
+
     return verts2d, vcolors, faces, depth

@@ -37,9 +37,8 @@ def render_smooth(verts2d, vcolors, img):
                                                                             sigma_of_edge, active_edges, active_nodes)
         active_nodes = tls.update_active_nodes(sigma_of_edge, active_edges, active_nodes, updated_nodes)
 
-        img, active_nodes_color = tls.paint_active_nodes(y, node_combination_on_edge,
-                                                         x_limits_of_edge, y_limits_of_edge, sigma_of_edge,
-                                                         active_edges, active_nodes, vcolors, img)
+        img, active_nodes_color = tls.color_contour(y, node_combination_on_edge, x_limits_of_edge, y_limits_of_edge,
+                                                    sigma_of_edge, active_edges, active_nodes, vcolors, img)
 
         x_left, idx_left = np.min(active_nodes[active_edges, 0]), np.argmin(active_nodes[active_edges, 0])
         x_right, idx_right = np.max(active_nodes[active_edges, 0]), np.argmax(active_nodes[active_edges, 0])
