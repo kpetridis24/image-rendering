@@ -5,13 +5,20 @@ import numpy as np
 import scipy.io as io
 
 
-"""
-Loads the necessary data from a .npy file.
-
-@param filename: the name of the file, including the .npy extension.
-@return: vertex coordinates & indices, color and depth of all triangles
-"""
 def load_data_npy(filename):
+    """Loads the necessary data from a numpy file.
+
+    Parameters
+    ----------
+    filename : the name of the file, including the .npy extension.
+
+    Returns
+    -------
+    verts2d_final : the coordinates of all the vertices of the triangle
+    vcolors : the RGB colors of the three vertices, of this triangle
+    faces : the indices from the three vertices of every triangle
+    depth : the depth of every vertex
+    """
     data = np.load(filename, allow_pickle=True).tolist()
     data = dict(data)
 
@@ -28,13 +35,20 @@ def load_data_npy(filename):
     return verts2d_final, vcolors, faces, depth
 
 
-"""
-Loads the necessary data from a .mat file.
-
-@param filename: the name of the file, including the .mat extension.
-@return: vertex coordinates & indices, color and depth of all triangles
-"""
 def load_data_mat(filename):
+    """Loads the necessary data from a matlab file.
+
+        Parameters
+        ----------
+        filename : the name of the file, including the .npy extension.
+
+        Returns
+        -------
+        verts2d_final : the coordinates of all the vertices of the triangle
+        vcolors : the RGB colors of the three vertices, of this triangle
+        faces : the indices from the three vertices of every triangle
+        depth : the depth of every vertex
+    """
     data = io.loadmat(filename)
     verts2d = np.array(data['vertices_2d'] - 1)
     vcolors = np.array(data['vertex_colors'])
