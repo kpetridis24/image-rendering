@@ -6,6 +6,18 @@ import inc.Helpers.display as dsp
 
 
 def render_smooth(verts2d, vcolors, img):
+    """Renders the image, using interpolate colors to achieve smooth color transitioning
+
+    Parameters
+    ----------
+    verts2d : Lx2 matrix containing the coordinates of every vertex (L vertices)
+    vcolors : Lx3 matrix containing the RGB color values of every vertex
+    img : MxNx3 image matrix
+
+    Returns
+    -------
+    img : updated MxNx3 image matrix
+    """
     if (verts2d == verts2d[0]).all():
         img[int(verts2d[0, 0]), int(verts2d[0, 1])] = np.mean(vcolors, axis=0)
         return img
@@ -21,7 +33,6 @@ def render_smooth(verts2d, vcolors, img):
     active_edges = np.array([False, False, False])
     active_nodes = np.zeros((3, 2))
 
-    is_invisible = False
     node_combination_on_edge = {0: [0, 1],
                                 1: [0, 2],
                                 2: [1, 2]
@@ -54,6 +65,18 @@ def render_smooth(verts2d, vcolors, img):
 
 
 def render_flat(verts2d, vcolors, img):
+    """Renders the image, using a single color for each triangle
+
+    Parameters
+    ----------
+    verts2d : Lx2 matrix containing the coordinates of every vertex (L vertices)
+    vcolors : Lx3 matrix containing the RGB color values of every vertex
+    img : MxNx3 image matrix
+
+    Returns
+    -------
+    img : updated MxNx3 image matrix
+    """
     new_color = np.array(np.mean(vcolors, axis=0))
     if (verts2d == verts2d[0]).all():
         img[int(verts2d[0, 0]), int(verts2d[0, 1])] = new_color
@@ -92,18 +115,22 @@ def render_flat(verts2d, vcolors, img):
     return img
 
 
-"""
-Iterates over every triangle, from the farthest to the nearest, and calls the coloring method for each one separately.
-
-@param verts2d: Lx2 matrix containing the coordinates of every vertex (L vertices)
-@param faces: Kx3 matrix containing the vertex indices of every triangle (K triangles)
-@param vcolors: Lx3 matrix containing the RGB color values of every vertex 
-@param depth: Lx1 array containing the depth of every vertex in its initial, 3D scene 
-@param shade_t: coloring strategy, with 'flat' and 'gouraud' indicating that every triangle should be filled with a 
-single color and have a gradual color changing effect respectively
-@return: MxNx3 image with colors
-"""
 def render(verts2d, faces, vcolors, depth, m, n, shade_t):
+    """Iterates over every triangle, from the farthest to the nearest, and calls the coloring method for each one separately.
+
+    Parameters
+    ----------
+    verts2d : Lx2 matrix containing the coordinates of every vertex (L vertices)
+    faces : Kx3 matrix containing the vertex indices of every triangle (K triangles)
+    vcolors : Lx3 matrix containing the RGB color values of every vertex
+    depth : Lx1 array containing the depth of every vertex in its initial, 3D scene
+    shade_t : coloring strategy, with 'flat' and 'gouraud' indicating that every triangle should be filled with a
+    color and have a gradual color changing effect respectively
+
+    Returns
+    -------
+    img : MxNx3 image with colors
+    """
     assert shade_t in ('flat', 'gouraud') and m >= 0 and n >= 0
     img = np.ones((m, n, 3))
     # depth of every triangle. depth[i] = depth of triangle i
@@ -111,7 +138,7 @@ def render(verts2d, faces, vcolors, depth, m, n, shade_t):
     # order from the farthest triangle to the closest, depth-wise
     triangles_in_order = list(np.flip(np.argsort(depth_tr)))
 
-    for t in triangles_in_order:#[4004:4005]:
+    for t in triangles_in_order:
         vertices_tr = faces[t]
         verts2d_tr = np.array(verts2d[vertices_tr])  # x,y of the 3 vertices of triangle t
         vcolors_tr = np.array(vcolors[vertices_tr])  # color of the 3 vertices of triangle t
